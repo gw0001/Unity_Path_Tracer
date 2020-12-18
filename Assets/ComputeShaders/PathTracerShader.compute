@@ -1,0 +1,294 @@
+﻿// ************************************************************************** //
+//                              PATH TRACER SHADER                            //
+// ************************************************************************** //
+//                         ADVANCED GAMES ENGINEERING                         //
+//                         GRAEME B. WHITE - 40415739                         //
+// ************************************************************************** //
+// PathTracerShader.compute                                                   //
+//                                                                            //
+// Compute Shader that is used to carry out all the necessary path tracing    //
+// calculations.															  //
+//																			  //
+// Shader takes in a pixel, fires a ray from the pixel, determines if the     //
+// 3D scene has been hit, determines the ray colour, carries out the          //
+// calculation again depending on the number of samples per pixel, then       //
+// determines the final colour of the pixel and sets it to the render texture //
+// ************************************************************************** //
+
+// ************************************************************************** //
+//                  SHADER DEFINITIONS AND INPUT VARIABLES                    //
+// ************************************************************************** //
+
+// Kernel definition
+#pragma kernel PathTracer
+
+// Libraries
+#include "Shading.cginc"
+
+// Result
+RWTexture2D<float4> _result;
+
+// Camera World Matrix
+float4x4 _camWorldMatrix;
+
+// Inverse of Camera Projection Matrix
+float4x4 _camInverseProjection;
+
+// Sphere World Matrix
+float4x4 _sphereWorldMatrix;
+
+// Sphere Radius
+float _sphereRadius;
+
+// Spheres buffer
+StructuredBuffer<Sphere> _spheres;
+
+// Mesh object buffer
+StructuredBuffer<MeshObject> _objects;
+
+// Samples per pixel
+int _samplesPerPixel;
+
+/*
+ * CREATE CAMERA RAY
+ *
+ * Method determines ray from the camera
+ */
+Ray CreateCameraRay(float2 uv)
+{
+	// Transform the camera origin to world space
+	float3 origin = mul(_camWorldMatrix, float4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
+    
+	// Invert the perspective projection of the view-space position
+	float3 direction = mul(_camInverseProjection, float4(uv, 0.0f, 1.0f)).xyz;
+	
+	// Transform the direction from camera to world space
+	direction = mul(_camWorldMatrix, float4(direction, 0.0f)).xyz;
+	
+	// Normalise the direction
+	direction = normalize(direction);
+
+	// Create camera ray
+	Ray cameraRay = CreateRay(origin, direction);
+	
+	// Return camera ray
+	return cameraRay;
+}
+
+/*
+ * HIT SCENE FUNCTION
+ * 
+ * Function determines if an object within the scene has been hit
+ * by a ray.
+ */
+bool HitScene(Ray aRay, float tMin, float tMax, inout HitRecord bestHit)
+{
+	bestHit = InitialiseHitRecord();
+	
+	// Hit anything boolean
+	bool hitAnything = false;
+	
+	// Closest distance so far
+	float closestSoFar = bestHit.hitDistance;
+	
+	// Temporary hit record
+	HitRecord temp;
+	
+	// Number of spheres
+	uint numSpheres;
+	
+	// Sphere buffer stride
+	uint sphereStride;
+	
+	// Obtain the number of spheres and the size of the sphere stride from the buffer
+	_spheres.GetDimensions(numSpheres, sphereStride);
+	
+	// Index
+	uint i;
+	
+	// Iterate over all spheres
+	for (i = 0; i < numSpheres; i++)
+	{
+		// Check if a sphere has been hit by a ray
+		if (_spheres[i].Hit(aRay, EPSILON, closestSoFar, temp) == true)
+		{
+			// Sphere hit, set boolean to true
+			hitAnything = true;
+			
+			// Set the closest distance to the distance held by the temporary hit record
+			closestSoFar = temp.hitDistance;
+			
+			// Set the best hit record to the temporary record
+			bestHit = temp;
+		}
+	}
+	
+	// Number of mesh object
+	uint numMeshObjects;
+	
+	// Mesh object buffer stride
+	uint meshObjectStride;
+	
+	// Obtain the number of mesh objects and the size of the mesh stride from the mesh object buffer
+	_objects.GetDimensions(numMeshObjects, meshObjectStride);
+	
+	// Iterate over all mesh objects
+	for (i = 0; i < numMeshObjects; i++)
+	{
+		// Check if a mesh object has been hit by a sphere
+		if (_objects[i].Hit(aRay, EPSILON, closestSoFar, temp) == true)
+		{
+			// Set hit anything to true
+			hitAnything = true;
+			
+			// Set closest so far to the temp record hit distance
+			closestSoFar = temp.hitDistance;
+			
+			// Set the best hit to the temporary record
+			bestHit = temp;
+		}
+	}
+	
+	// Return the value of hit anything
+	return hitAnything;
+}
+
+/*
+ * SCATTER RAY FUNCTION
+ *
+ * Function is used to check if the ray can
+ * be scattered, depending on the material
+ */
+bool ScatteredRay(inout Ray aRay, inout HitRecord aRecord, inout float3 attenuation)
+{	
+	// Ray scattered boolean
+	bool rayScattered = false;
+	
+	// Check if the ray can be scattered depending on the objects material
+	if (LambertianScatter(aRay, aRecord, attenuation) == true ||
+		MetallicScatter(aRay, aRecord, attenuation) == true ||
+		DielectricScatter(aRay, aRecord, attenuation) == true ||
+		EmissiveScatter(aRay, aRecord, attenuation) == true)
+	{
+		// Set ray scattered to true
+		rayScattered = true;
+	}
+	
+	// Return the value of ray scattered
+	return rayScattered;
+}
+
+/*
+ * RAY COLOUR FUNCTION
+ *
+ * Function used to obtain the colour 
+ * of the ray
+ */
+float3 RayColour(inout Ray aRay)
+{
+	// Colour vector
+	float3 rayColour = float3(1.0f, 1.0f, 1.0f);
+	
+	// Iterate ray up to the ray bounce limit
+	for (int i = 0; i < _rayBounceLimit; i++)
+	{
+		// Empty hit record
+		HitRecord aRecord = InitialiseHitRecord();
+		
+		// Empty attenuation vector
+		float3 attenuation = float3(0.0f, 0.0f, 0.0f);
+		
+		// Check if the scene has been hit
+		if (HitScene(aRay, EPSILON, aRecord.hitDistance, aRecord) == true)
+		{
+			// Obtain value of scattered ray
+			bool isScattered = ScatteredRay(aRay, aRecord, attenuation);
+
+			// Check if ray is scattered
+			if (isScattered == true)
+			{
+				// Ray is scattered, multiply the ray colour by the attenuation
+				rayColour *= attenuation;
+			}
+			// Ray is not scattered, check if hit is on emissive material
+			else if (aRecord.hitMaterialType == matEmissive)
+			{
+				// Material is emissive, set the ray colour to the emissive colour
+				rayColour *= attenuation + aRecord.hitEmission * aRecord.hitEmissivePower;
+
+				// Ray will not bounce, break the loop
+				break;
+			}
+			// Material is not scattered or emissive
+			else
+			{
+				// Set ray colour to 0.0f 
+				rayColour = float3(0.0f, 0.0f, 0.0f);
+
+				// Ray will no longer bounce, break the loop
+				break;
+			}
+		}
+		else
+		{
+			// Ray does not intersect with the scene, 
+			// multiply the colour of the ray by the
+			// skybox colour
+			rayColour *= SkyBox(aRay);
+			
+			// Ray will not bounce, break the loop
+			break;
+		}
+	}
+	
+	// Return the ray colour
+	return rayColour;
+}
+
+/*
+ * PATH TRACER KERNEL
+ *
+ * The Kernel that carries out path tracing
+ */
+[numthreads(8, 8, 1)]
+void PathTracer(uint3 id : SV_DispatchThreadID)
+{
+	// Width
+	uint width;
+	
+	// Height
+	uint height;
+	
+	// Determine the width and height of the render texture
+	_result.GetDimensions(width, height);
+
+	// Set pixel coordinates to the render texture pixel coordinates
+	_pixel = id.xy;
+
+	// Empty pixel colour vector
+	float3 pixelColour = float3(0.0f, 0.0f, 0.0f);
+	
+	// Iterate over the number of samples per pixel
+	for (int i = 0; i < _samplesPerPixel; i++)
+	{
+		// Convert pixel coordinates to [-1,1] range and add 
+		float2 uv = float2((id.xy + float2(Rand(), Rand())) / float2(width, height) * 2.0f - 1.0f);
+		
+		// Create a ray for the pixel
+		Ray aRay = CreateCameraRay(uv);
+
+		// Obtain the colour of the ray 
+		pixelColour += RayColour(aRay);
+	}
+
+	// Divide the pixel by the number of samples per pixel
+	pixelColour /= (float) _samplesPerPixel;
+	
+	// Clamp the rgb colour values between 0 and 0.999 to prevent any full bright pixel colours
+	pixelColour = float3(clamp(pixelColour.r, 0, 0.999), clamp(pixelColour.g, 0, 0.999), clamp(pixelColour.b, 0, 0.999));
+
+	// Write colour to the render texture
+	_result[id.xy] = float4(pixelColour, 1.0f);
+}
+
+
