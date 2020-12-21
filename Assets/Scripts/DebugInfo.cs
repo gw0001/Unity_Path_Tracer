@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIscreen : MonoBehaviour
+public class DebugInfo : MonoBehaviour
 {
+    // Debug Info Instance
+    public static DebugInfo instance = null;
+
     // Average frame rate
     private int _fpsAvg;
 
@@ -38,6 +41,26 @@ public class UIscreen : MonoBehaviour
     // Enable UI boolean
     private bool _enableUI;
 
+    private void Awake()
+    {
+        // Check if instance is null
+        if (instance == null)
+        {
+            //Don't destroy the current game manager
+            DontDestroyOnLoad(gameObject);
+
+            //Set game manager instance to this
+            instance = this;
+        }
+        // Check if current instance of game manager is equal to this game manager
+        else if (instance != this)
+        {
+            //Destroy the game manager that is not the current game manager
+            Destroy(gameObject);
+        }
+    }
+
+
     private void Update()
     {
         // Check if the UI is enabled
@@ -49,11 +72,6 @@ public class UIscreen : MonoBehaviour
             // Update the current sample
             UpdateCurrentSample();
         }
-        
-        
-        
-        
-
     }
 
 
@@ -78,7 +96,7 @@ public class UIscreen : MonoBehaviour
     private void UpdateCurrentSample()
     {
         // Obtain the current sample
-        int currentSample = _pathTracer.GetCurrentSample();
+        int currentSample = _pathTracer.GetCurrentSample;
 
         // Update current sample text
         _curSampleText.text = "Current sample: " + currentSample.ToString();

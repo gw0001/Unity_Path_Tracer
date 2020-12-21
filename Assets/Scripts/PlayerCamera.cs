@@ -73,7 +73,7 @@ public class PlayerCamera : MonoBehaviour
      */
     void Update()
     {
-
+        // Check if cursor has b
         if (Cursor.lockState == CursorLockMode.Locked)
         {
             // Determine the rotation in X from mouse input
@@ -90,20 +90,6 @@ public class PlayerCamera : MonoBehaviour
 
             // Camera movement
             CameraMovement();
-        }
-
-        // Check if user has pressed "o" key on the keyboard
-        if (Input.GetKey(KeyCode.O))
-        {
-            // Unlock the mouse cursor
-            UnlockMouseCursor();
-        }
-
-        // Check if user has pressed the "p" key on the keyboard
-        if (Input.GetKey(KeyCode.P))
-        {
-            // Lock the mouse cursor
-            LockMouseCursor();
         }
     }
 
@@ -131,7 +117,7 @@ public class PlayerCamera : MonoBehaviour
      * Method is used to unlock the cursor from
      * the application and make the cursor visible
      */
-    void UnlockMouseCursor()
+    public void UnlockMouseCursor()
     {
         // Unlock the cursor to the window of the application
         Cursor.lockState = CursorLockMode.None;
@@ -146,7 +132,7 @@ public class PlayerCamera : MonoBehaviour
      * Method is used to lock the cursor to
      * the application and hide the cursor
      */
-    void LockMouseCursor()
+    public void LockMouseCursor()
     {
         // Lock the cursor to the window of the application
         Cursor.lockState = CursorLockMode.Locked;

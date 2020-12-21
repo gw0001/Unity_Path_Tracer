@@ -9704,6 +9704,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main Camera
       objectReference: {fileID: 0}
+    - target: {fileID: 7688013650803617106, guid: f7a12a8efa946b54e88d1161d322f5c9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7688013650803617109, guid: f7a12a8efa946b54e88d1161d322f5c9,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7688013650803617109, guid: f7a12a8efa946b54e88d1161d322f5c9,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -9721,6 +9731,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7688013650803617109, guid: f7a12a8efa946b54e88d1161d322f5c9,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7688013650803617109, guid: f7a12a8efa946b54e88d1161d322f5c9,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -9733,16 +9748,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalRotation.z
       value: -0.065403156
-      objectReference: {fileID: 0}
-    - target: {fileID: 7688013650803617109, guid: f7a12a8efa946b54e88d1161d322f5c9,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7688013650803617109, guid: f7a12a8efa946b54e88d1161d322f5c9,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7688013650803617109, guid: f7a12a8efa946b54e88d1161d322f5c9,
         type: 3}
@@ -9771,13 +9776,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7688013650803617111, guid: f7a12a8efa946b54e88d1161d322f5c9,
         type: 3}
-      propertyPath: _useSkyboxTexture
-      value: 1
+      propertyPath: _samplesPerPixel
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7688013650803617111, guid: f7a12a8efa946b54e88d1161d322f5c9,
         type: 3}
-      propertyPath: _samplesPerPixel
-      value: 4
+      propertyPath: _useSkyboxTexture
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f7a12a8efa946b54e88d1161d322f5c9, type: 3}

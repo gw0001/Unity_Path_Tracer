@@ -38,6 +38,9 @@ public class PathTracer : MonoBehaviour
     //                                 VARIABLES                                  //
     // ************************************************************************** //
 
+    // Intance
+    private static PathTracer instance = null;
+
     // Camera
     private Camera _cam;
 
@@ -121,8 +124,6 @@ public class PathTracer : MonoBehaviour
 
     // Max Ray Bounce Limit
     private const int _MAX_BOUNCE = 20;
-
-    [SerializeField] private UIscreen _ui;
 
     // ***** EDITOR - RAY SETTINGS ***** //
     [Header("Path Tracer Settings")]
@@ -310,7 +311,7 @@ public class PathTracer : MonoBehaviour
         if (_cam.transform.hasChanged == true)
         {
             // Reset current sample to 0
-            _currentSample = 0;
+            ResetCurrentSample();
 
             // Change the camera transform to false
             _cam.transform.hasChanged = false;
@@ -341,143 +342,6 @@ public class PathTracer : MonoBehaviour
 
                 // Set spheres need rebuilding to true
                 _spheresNeedRebuilding = true;
-            }
-        }
-
-        // Check if user has pressed "F1" key on keyboard
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            // Enable the standard skybox
-            EnableStandardSkybox();
-        }
-
-        // Check if user has pressed "F2" key on keyboard
-        if (Input.GetKeyDown(KeyCode.F2))
-        {
-            // Enable the vaporwave skybox
-            EnableNightSkybox();
-        }
-
-        // Check if user has pressed "F3" key on keyboard
-        if (Input.GetKeyDown(KeyCode.F3))
-        {
-            // Enable the textured skybox
-            EnableVaporwaveSkybox();
-        }
-
-        // Check if user has pressed "F4" key on keyboard
-        if (Input.GetKeyDown(KeyCode.F4))
-        {
-            // Enable the textured skybox
-            EnableTexturedSkybox();
-        }
-
-        // Check if user has pressed the "Escape" key on the keyboard
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            // Quit the application
-            Application.Quit();
-        }
-
-        // Check if user has pressed the "N" key on the keyboard
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            // Invoke enable denoising shader method
-            EnableDenoisingShader();
-        }
-
-        // Check if user has pressed the "M" key on the keyboard
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            // Invoke disable denoising shader method
-            DisableDenoisingShader();
-        }
-
-        // Check if user has pressed the "U" key on the keyboard 
-        if (Input.GetKeyDown(KeyCode.U))
-        {
-            // Enable the UI
-            _ui.EnableUI();
-
-            // Invoke disable denoising shader method
-            DisableDenoisingShader();
-        }
-
-        // Check if the user has pressed the "I" key on the keyboard
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            // Disable the UI
-            _ui.DisableUI();
-
-            // Invoke enable denoising shader method
-            EnableDenoisingShader();
-        }
-
-        // Check if the user has pressed the "J" key on the keyboard
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            // Check that increasing the sampling per pixel value doesn't exceed the limit
-            if(!(_samplesPerPixel + 1 > _MAX_SPP))
-            {
-                // Increment the samples per pixel
-                _samplesPerPixel++;
-
-                // Update the ray bounce text on the UI
-                _ui.UpdateSamplesPP(_samplesPerPixel);
-
-                // Set current sample to 0
-                _currentSample = 0;
-            }
-        }
-
-        // Check if the user has pressed the "H" key on the key board
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            // Check that decrementing the samples per pixel doesn't = 0
-            if (_samplesPerPixel - 1 != 0)
-            {
-                // Decrement the samples per pixel
-                _samplesPerPixel--;
-
-                // Update the ray bounce text on the UI
-                _ui.UpdateSamplesPP(_samplesPerPixel);
-
-                // Set current sample to 0
-                _currentSample = 0;
-            }
-        }
-
-        // Check if the user has pressed the "L" key on the key board
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            // CHeck that incrementing the ray bounce doesn't exceed the limit
-            if (!(_rayBounceLimit + 1 > _MAX_BOUNCE))
-            {
-                // Increment the bounce limit by 1
-                _rayBounceLimit++;
-
-                // Update the ray bounce text on the UI
-                _ui.UpdateRay(_rayBounceLimit);
-
-                // Set current sample to 0
-                _currentSample = 0;
-            }
-        }
-
-        // Check if the user has pressed the "K" key on the key board
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            // Check that decrementing the ray bounce doesn't = 0
-            if (_rayBounceLimit - 1 != 0)
-            {
-                // Decrement the bounce limit by 1
-                _rayBounceLimit--;
-
-                // Update the ray bounce text on the UI
-                _ui.UpdateRay(_rayBounceLimit);
-
-                // Set current sample to 0
-                _currentSample = 0;
             }
         }
     }
@@ -526,17 +390,24 @@ public class PathTracer : MonoBehaviour
      */
     private void Awake()
     {
+        // Check if instance is null
+        if (instance == null)
+        {
+            //Don't destroy the current game manager
+            DontDestroyOnLoad(gameObject);
+
+            //Set game manager instance to this
+            instance = this;
+        }
+        // Check if current instance of game manager is equal to this game manager
+        else if (instance != this)
+        {
+            //Destroy the game manager that is not the current game manager
+            Destroy(gameObject);
+        }
+
         // Obtain the camera component
         _cam = gameObject.GetComponent<Camera>();
-
-        // Update the ray bounce limit on the ui
-        _ui.UpdateRay(_rayBounceLimit);
-
-        // Update the samples per pixel on the UI
-        _ui.UpdateSamplesPP(_samplesPerPixel);
-
-        // Disable the ui
-        _ui.DisableUI();
     }
 
     /*
@@ -594,7 +465,7 @@ public class PathTracer : MonoBehaviour
             _targetRenderTexture.Create();
 
             // Set current samples to 0
-            _currentSample = 0;
+            ResetCurrentSample();
         }
     }
 
@@ -716,7 +587,7 @@ public class PathTracer : MonoBehaviour
         _spheresNeedRebuilding = false;
 
         // Set current sample to false
-        _currentSample = 0;
+        ResetCurrentSample();
 
         // Clear the sphere object list
         _sphereObjects.Clear();
@@ -787,7 +658,7 @@ public class PathTracer : MonoBehaviour
         _objectsNeedRebuilding = false;
 
         // Set current sample to false
-        _currentSample = 0;
+        ResetCurrentSample();
 
         // Clear the object list
         _objects.Clear();
@@ -920,7 +791,6 @@ public class PathTracer : MonoBehaviour
         }
     }
 
-
     /*
      * STANDARD SKYBOX METHOD
      * 
@@ -930,7 +800,7 @@ public class PathTracer : MonoBehaviour
      * Method sets vaporwave skybox boolean, night skybox
      * boolean and the texture boolean to false
      */
-    private void EnableStandardSkybox()
+    public void EnableStandardSkybox()
     {
         // Set use vaporwave skybox to false
         _useVaporwaveSkybox = false;
@@ -942,7 +812,7 @@ public class PathTracer : MonoBehaviour
         _useNightSkybox = false;
 
         // Set current sample to 0
-        _currentSample = 0;
+        ResetCurrentSample();
     }
 
     /*
@@ -958,7 +828,7 @@ public class PathTracer : MonoBehaviour
      * night skybox boolean to true,
      * and skybox texture boolean to false
      */
-    private void EnableVaporwaveSkybox()
+    public void EnableVaporwaveSkybox()
     {
         // Set use vaporwave skybox to false
         _useVaporwaveSkybox = true;
@@ -970,7 +840,7 @@ public class PathTracer : MonoBehaviour
         _useNightSkybox = false;
 
         // Set current sample to 0
-        _currentSample = 0;
+        ResetCurrentSample();
     }
 
     /*
@@ -984,7 +854,7 @@ public class PathTracer : MonoBehaviour
      * night skybox boolean to false,
      * and skybox texture boolean to false
      */
-    private void EnableTexturedSkybox()
+    public void EnableTexturedSkybox()
     {
         // Set use skybox boolean to false
         _useSkyboxTexture = true;
@@ -996,7 +866,7 @@ public class PathTracer : MonoBehaviour
         _useNightSkybox = false;
 
         // Set current sample to 0
-        _currentSample = 0;
+        ResetCurrentSample();
     }
 
     /*
@@ -1009,7 +879,7 @@ public class PathTracer : MonoBehaviour
      * night skybox boolean to false
      * and skybox texture boolean to false
      */
-    private void EnableNightSkybox()
+    public void EnableNightSkybox()
     {
         // Set use night sky boolean to false
         _useNightSkybox = true;
@@ -1021,7 +891,7 @@ public class PathTracer : MonoBehaviour
         _useSkyboxTexture = false;
 
         // Set current sample to 0
-        _currentSample = 0;
+        ResetCurrentSample();
     }
 
     /*
@@ -1030,13 +900,13 @@ public class PathTracer : MonoBehaviour
      * Method is used to enable the denoising
      * shader
      */
-    private void EnableDenoisingShader()
+    public void EnableDenoisingShader()
     {
         // Set use denoising shader to true
         _useDenoisingShader = true;
 
         // Set current sample to 0
-        _currentSample = 0;
+        ResetCurrentSample();
     }
 
     /*
@@ -1045,13 +915,13 @@ public class PathTracer : MonoBehaviour
      * Method is used to disable the denoising
      * shader
      */
-    private void DisableDenoisingShader()
+    public void DisableDenoisingShader()
     {
         // Set use denoising shader to true
         _useDenoisingShader = false;
 
         // Set current sample to 0
-        _currentSample = 0;
+        ResetCurrentSample();
     }
 
     /*
@@ -1060,9 +930,58 @@ public class PathTracer : MonoBehaviour
      * Returns the value held by 
      * current sample
      */
-    public int GetCurrentSample()
+    public int GetCurrentSample
     {
-        return (int)_currentSample;
+        get { return _samplesPerPixel;  }
+    }
+
+    public int GetCurrentBounceLimit
+    {
+        get { return _rayBounceLimit;  }
+    }
+
+
+
+    public void ResetCurrentSample()
+    {
+        _currentSample = 0;
+    }
+
+    public void IncrementRayBounceLimit()
+    {
+        _rayBounceLimit++;
+    }
+
+    public void DecrementRayBounceLimit()
+    {
+        _rayBounceLimit--;
+    }
+
+    public void IncrementSamplesPerPixel()
+    {
+        _samplesPerPixel++;
+    }
+
+    public void DecrementSamplesPerPixel()
+    {
+        _samplesPerPixel--;
+    }
+
+    public int GetMaxSampleLimit
+    {
+        get
+        {
+            return _MAX_SPP;
+        }
+
+    }
+
+    public int GetMaxBounceLimit
+    {
+        get
+        {
+            return _MAX_BOUNCE;
+        }
     }
 }
 
