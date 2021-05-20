@@ -1,12 +1,11 @@
 // ************************************************************************** //
-//                                 SAMPLING                                   //
+//                            PATH TRACER SHADER                              //
+//                              GRAEME B. WHITE                               //
 // ************************************************************************** //
-//                         ADVANCED GAMES ENGINEERING                         //
-//                         GRAEME B. WHITE - 40415739                         //
-// ************************************************************************** //
-// Shading.cginc                                                              //
+// Sampling.cginc                                                             //
 //                                                                            //
-// CGINC file containing methods to determine the shading of scattered rays.  //
+// CGINC file containing variables and methods for carrying out sampling of   //
+// rays.																	  //
 // ************************************************************************** //
 
 // ************************************************************************** //

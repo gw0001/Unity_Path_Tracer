@@ -1,8 +1,6 @@
 ﻿// ************************************************************************** //
 //                                SCENE MOVEMENT                              //
-// ************************************************************************** //
-//                         ADVANCED GAMES ENGINEERING                         //
-//                         GRAEME B. WHITE - 40415739                         //
+//                                GRAEME B. WHITE                             //
 // ************************************************************************** //
 // SceneMovement.cs                                                           //
 //                                                                            //
@@ -97,7 +95,6 @@ public class SceneMovement : MonoBehaviour
         {
             // Change scene
             _theGM.sceneSelection(_theGM.scenesToLoad[5]);
-
         }
     }
 }

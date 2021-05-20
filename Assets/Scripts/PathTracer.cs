@@ -1,8 +1,6 @@
 ﻿// ************************************************************************** //
 //                                  PATH TRACER                               //
-// ************************************************************************** //
-//                         ADVANCED GAMES ENGINEERING                         //
-//                         GRAEME B. WHITE - 40415739                         //
+//                                GRAEME B. WHITE                             //
 // ************************************************************************** //
 // PathTracer.cs                                                              //
 //                                                                            //
@@ -39,7 +37,7 @@ public class PathTracer : MonoBehaviour
     // ************************************************************************** //
 
     // Intance
-    private static PathTracer instance = null;
+    //private static PathTracer instance = null;
 
     // Camera
     private Camera _cam;
@@ -351,7 +349,7 @@ public class PathTracer : MonoBehaviour
      * 
      * Method invokes when script is disabled
      */
-    private void OnDisable()
+    public void OnDisable()
     {
         // Check if the sphere buffer exists
         if (_sphereBuffer != null)
@@ -363,6 +361,7 @@ public class PathTracer : MonoBehaviour
         // Check if object buffer exists
         if (_objectBuffer != null)
         {
+
             // Release the buffer
             _objectBuffer.Release();
         }
@@ -380,6 +379,32 @@ public class PathTracer : MonoBehaviour
             // Release the buffer
             _indexBuffer.Release();
         }
+
+        _spheresNeedRebuilding = true;
+        _objectsNeedRebuilding = true;
+    }
+
+    /*
+     * 
+     */
+    public void OnEnable()
+    {
+
+
+
+
+
+        //// Set sphere buffer
+        //SetComputeBuffer("_spheres", _sphereBuffer);
+
+        //// Set object buffer
+        //SetComputeBuffer("_objects", _objectBuffer);
+
+        //// Set vertices buffer
+        //SetComputeBuffer("_vertices", _vertexBuffer);
+
+        //// Set Indices buffer
+        //SetComputeBuffer("_indices", _indexBuffer);
     }
 
     /*
@@ -390,24 +415,25 @@ public class PathTracer : MonoBehaviour
      */
     private void Awake()
     {
-        // Check if instance is null
-        if (instance == null)
-        {
-            //Don't destroy the current game manager
-            DontDestroyOnLoad(gameObject);
+        //// Check if instance is null
+        //if (instance == null)
+        //{
+        //    //Don't destroy the current game manager
+        //    DontDestroyOnLoad(gameObject);
 
-            //Set game manager instance to this
-            instance = this;
-        }
-        // Check if current instance of game manager is equal to this game manager
-        else if (instance != this)
-        {
-            //Destroy the game manager that is not the current game manager
-            Destroy(gameObject);
-        }
+        //    //Set game manager instance to this
+        //    instance = this;
+        //}
+        //// Check if current instance of game manager is equal to this game manager
+        //else if (instance != this)
+        //{
+        //    //Destroy the game manager that is not the current game manager
+        //    Destroy(gameObject);
+        //}
 
         // Obtain the camera component
         _cam = gameObject.GetComponent<Camera>();
+
     }
 
     /*

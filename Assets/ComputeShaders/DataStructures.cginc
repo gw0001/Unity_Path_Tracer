@@ -1,10 +1,9 @@
 // ************************************************************************** //
-//                               DATA STRUCTURES                              //
+//                            PATH TRACER SHADER                              //
+//                              GRAEME B. WHITE                               //
 // ************************************************************************** //
-//                         ADVANCED GAMES ENGINEERING                         //
-//                         GRAEME B. WHITE - 40415739                         //
-// ************************************************************************** //
-// DataStructures.cginc                                                       //
+// Data Structures (DataStructures.cginc)                                     //
+//                                                                            //
 //                                                                            //
 // CGINC file containing structs and methods for rays, hit records, spheres,  //
 // and mesh objects used in path tracer.                                      //
@@ -15,7 +14,7 @@
 // ************************************************************************** //
 
 // Infinity
-static const float INFINITY = 1.#INF;
+static const float INFINITY = 10000000;
 
 // Epsilon value
 static const float EPSILON = 0.001f;
@@ -154,7 +153,7 @@ HitRecord InitialiseHitRecord()
 	aHit.hitPoint = float3(0.0f, 0.0f, 0.0f);
 	
 	// Set distance to a stupidly high value
-	aHit.hitDistance = 1.#INF;
+	aHit.hitDistance = 10000000;
 	
 	// Set Hit Normal
 	aHit.hitNormal = float3(0.0f, 0.0f, 0.0f);
